@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include
+#include <getopt.h>
 
 int main(int argc, char **argv){
-  while(1){
+  char* input;
+  char* output;
+  int opt;
+
+  while((opt = getopt_long(argc, argv, "i:o:")) != -1){
     /*
     see disc slides
     for each iteration
@@ -11,14 +15,24 @@ int main(int argc, char **argv){
       switch to case for option
         in case, assign optarg to appropriate var
     */
-    int option_index = 0;
+    //nameString, needsArg?, flag, val
     static struct option long_options[] = {
-      {"input",   0,    0,    'i'},
-      {"output",  0,    0,    'o'},
-      {"segfult", 0,    0,    's'},
-      {"catch",   0,    0,    'c'},
-      {0,         0,    0,     0}
+      {"input",   required_argument,    0,    'i'},
+      {"output",  required_argument,    0,    'o'},
+      {"segfult", no_argument,          0,    's'},
+      {"catch",   no_argument,          0,    'c'},
+      {0,         0,                    0,     0}
     };
+    switch(opt){
+      case 'i':
+        break;
+      case 'o':
+        break;
+      case 's':
+        break;
+      case 'c':
+        break;
+    }
 
   }
   //proceed to execute appropriate functions based on variable values
