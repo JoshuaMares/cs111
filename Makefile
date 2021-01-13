@@ -1,4 +1,4 @@
-default: lab.c
+default: lab0.c
 	gcc -o lab0 -g -Wall -Wextra lab0.c
 
 check:

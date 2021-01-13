@@ -1,3 +1,37 @@
 NAME: Joshua Moises Mares
 EMAIL: joshuamares180@gmail.com
 ID: 005154394
+
+lab0.c:
+C file containing code to be compiled.  The program is able to read from stdin
+and write to stdout.  All options are optional and include:
+  --input filename
+    +this option makes filname stdin
+  --output filename
+    +this option creates filename and makes it stdout
+  --segfault
+    +this option causes a segfault
+  --catch
+    +this option catches segfaults
+When an invalid option is passed in, the program prints valid options and exits.
+
+Makefile:
+The default option compiles compiles lab0.c with options -g, -Wall, and -Wextra
+for debugger assistance and error checking.  The check option runs smoke-tests.
+The clean option removes all files created by this makefile.  The dist option
+creates a tarball containing the contents needed for this project.
+Smoke-test cases:
+  balsnd;kjnfk
+  adfjadk
+  asdfjnaksld
+
+backtrace.png:
+A screenshot of the gdb session that shows the segmentation fault and its stack
+backtrace.
+
+breakpoint.png:
+A screenshot of the gdb session that shows the use of a breakpoint and the value
+of the null pointer before assignment.
+
+README:
+This file.
