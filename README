@@ -23,20 +23,20 @@ makefile.  The dist option creates a tarball containing the contents needed for
 this project.
 Smoke-test cases:
   --input thisfileshouldnotexist
-    attempts to take input from a non-existent file
-    exits with code 2
+    +attempts to take input from a non-existent file
+    +exits with code 2
   --input tmpfile --output unwritable_file
-    attempts to output to a file without write permissions
-    exits with code 3
+    +attempts to output to a file without write permissions
+    +exits with code 3
   --badoption
-    attempts to pass in an invalid option
-    exits with code 1
+    +attempts to pass in an invalid option
+    +exits with code 1
   --input tmpfilein --output tmpfileout --segfault --catch
-    causes a segfault and catches it
-    exits with code 4
+    +causes a segfault and catches it
+    +exits with code 4
   --input tmpfilein --output tmpfileout
-    successfully copies tmpfilein into tmpfileout
-    exits normally with code 0
+    +successfully copies tmpfilein into tmpfileout
+    +exits normally with code 0
 
 backtrace.png:
 A screenshot of the gdb session that shows the segmentation fault and its stack
