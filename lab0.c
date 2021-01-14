@@ -20,7 +20,7 @@ int main(int argc, char **argv){
   char* input = NULL;
   char* output = NULL;
   int sf = 0;
-  int option_index = 0;
+  int option_index = 0;//still not why we need this
   int option_short;
 
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv){
         //incorrect option
         //print out correct usage
         //help page
-        printf("Unrecognized option.\nValid options include:\n\t --input filename\n\t --output filename\n\t --segfault\n\t --catch");
+        printf("Unrecognized option.\nValid options include:\n\t --input filename\n\t --output filename\n\t --segfault\n\t --catch\n");
         exit(1);
         break;
     }//end of switch
@@ -77,23 +77,26 @@ int main(int argc, char **argv){
       dup(ifd);
       close(ifd);
     }else{
-      fprintf(stderr, "--input error\nCould not open input file: %s\n%s", input, strerror(errno));
+      fprintf(stderr, "--input error\nCould not open input file: %s\n%s\n", input, strerror(errno));
       exit(2);
     }
   }
   if(output){
-    //I would use write only but id assume
-    //youd like to read it
     //o_rdwr isnt working
-    //for 0666 think chmod permissions
-    //for some reason 0666 isnt working properly either but it works enough for this program
+    //why does o_rdonly work but not o_rdwr?
+    //for 0666 think chmod permissions, first 0 indicates file or directory
+    //for some reason 0666 isnt working properly either but it sets enough of permissions to make this work
+    /*do we cancel if file exists?
+      do we write over file or append to it?*/
+    //doesnt throw error when read only?
     int ofd = creat(output, 0666);
     if(ofd>=0){
       close(1);
       dup(ofd);
       close(ofd);
     }else{
-      fprintf(stderr, "--output error\nCould not open output file: %s\n%s", output, strerror(errno));
+      fprintf(stderr, "--output error\nCould not open output file: %s\n%s\n", output, strerror(errno));
+      exit(3);
     }
   }
   if(sf){
@@ -110,6 +113,8 @@ int main(int argc, char **argv){
   }
   if(status == -1){
     //print error code
+    fprintf(stderr, "Error, could not write to file: %s\n%s\n", output, strerror(errno));
+    exit(3);
   }
   exit(0);
 }

@@ -17,13 +17,26 @@ When an invalid option is passed in, the program prints valid options and exits.
 
 Makefile:
 The default option compiles compiles lab0.c with options -g, -Wall, and -Wextra
-for debugger assistance and error checking.  The check option runs smoke-tests.
-The clean option removes all files created by this makefile.  The dist option
-creates a tarball containing the contents needed for this project.
+for debugger assistance and error checking.  The check option runs check.sh which
+contains the smoketests.  The clean option removes all files created by this
+makefile.  The dist option creates a tarball containing the contents needed for
+this project.
 Smoke-test cases:
-  balsnd;kjnfk
-  adfjadk
-  asdfjnaksld
+  --input thisfileshouldnotexist
+    attempts to take input from a non-existent file
+    exits with code 2
+  --input tmpfile --output unwritable_file
+    attempts to output to a file without write permissions
+    exits with code 3
+  --badoption
+    attempts to pass in an invalid option
+    exits with code 1
+  --input tmpfilein --output tmpfileout --segfault --catch
+    causes a segfault and catches it
+    exits with code 4
+  --input tmpfilein --output tmpfileout
+    successfully copies tmpfilein into tmpfileout
+    exits normally with code 0
 
 backtrace.png:
 A screenshot of the gdb session that shows the segmentation fault and its stack
