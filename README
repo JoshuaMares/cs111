@@ -48,3 +48,19 @@ of the null pointer before assignment.
 
 README:
 This file.
+
+Sources:
+  --man7.org
+    +Man pages for every function used and their associated libraries
+    +errno, getopt, signal, etc
+  --stackoverflow.com/questions/2245193/why-does-open-create-my-file-with-the-wrong-permissions
+  --www.december.com/unix/ref/chmod.html
+    +issues with o_rdwr
+    +creating unwritable files
+  --unix.stackexchange.com/questions/181937/how-create-a-temporary-file-in-shell-script
+    +help with the script on how to create and delete temp files
+  --youtube.com/watch?v=7Fsy58Gegr4&ab_channel=FreeDOS
+    +help with getopt_long
+  --slides
+    +input and output redirection, signal handler, error handling code
+    +makefile, file descriptor, gdb, tar help
