@@ -1,0 +1,21 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab0.c:
+C file containing code to be compiled.
+
+Makefile:
+The default option compiles compiles lab0.c with options -g, -Wall, and -Wextra
+for debugger assistance and error checking.  The check option runs check.sh which
+contains the smoketests.  The clean option removes all files created by this
+makefile.  The dist option creates a tarball containing the contents needed for
+this project.
+Smoke-test cases:
+
+
+README:
+This file.
+
+Sources:
+  https://en.wikibooks.org/wiki/Serial_Programming/termios
