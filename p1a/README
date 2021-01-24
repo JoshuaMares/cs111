@@ -26,3 +26,8 @@ This file.
 
 Sources:
   https://en.wikibooks.org/wiki/Serial_Programming/termios
+  man7.org
+  TA Slides
+    Essential for understanding piping.  Also helped with the structure of the program.
+  https://www.youtube.com/watch?v=Mqb2dVRe0uo
+    Helped with one way piping and piping practices.
