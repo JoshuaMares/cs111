@@ -1,0 +1,45 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab1b-client.c:
+C file containing the client side of the the program.  This program connects to
+the server program and sends all keyboard input to it.  Options include:
+  --port=
+    Specifies the port used to connect to the server. Mandatory.
+  --log=
+    Logs all input sent to and ouput recieved from the server.
+  --host=
+    Specifies the server hostname.  Without this parameter the default hostname is
+    localhost.
+  --compress
+    Compresses all communication between the client and server.
+  --debug
+    Prints relevant messages to aid in debugging.
+
+lab1b-server.c:
+C file containing the server side of the the program.  This program connects to
+the client program and sends all shell output to it.  Options include:
+  --port=
+    Specifies the port used to connect to the server. Mandatory.
+  --compress
+    Compresses all communication between the client and server.
+  --debug
+    Prints relevant messages to aid in debugging.
+
+Makefile:
+The default option compiles compiles lab0.c with options -g, -Wall, and -Wextra
+for debugger assistance and error checking.  The clean option removes all files
+created by this makefile.  The dist option creates a tarball containing the
+contents needed for this project.
+
+README:
+This file.
+
+Notes:
+This project is incomplete.
+
+Sources:
+  man7.org
+  zlib.net
+  slides
