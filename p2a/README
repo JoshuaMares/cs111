@@ -1,0 +1,10 @@
+Questions:
+2.1.1
+  It takes many iterations before errors are seen because the probability of a
+  race condition is very low.  In addition, most of the time spent in the
+  program is dedicated to the creation of threads.  Compared to the time
+  necessary to create a thread, the add operation costs next to nothing, so the
+  first thread created often gets free reign on the variable for which there is
+  a race condition.  When we lower the number of iterations, the total cost of
+  the add functions becomes even smaller and thus less likely.
+  
