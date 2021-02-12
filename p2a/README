@@ -7,4 +7,27 @@ Questions:
   first thread created often gets free reign on the variable for which there is
   a race condition.  When we lower the number of iterations, the total cost of
   the add functions becomes even smaller and thus less likely.
-  
+
+2.1.2
+  Yield runs are much slower because of the context switching that occurs on
+  every iteration.  Using the code provided, we would be unable to accurately
+  measure the per-operation timings when using the yield option.  We would have
+  get the time before and after each yield and account for them later.  This,
+  however, would lead to another race condition.
+
+2.1.3
+  The average cost per operation drops with increasing iterations because the
+  time needed to create the threads is included in this measurement.  Since the
+  thread creation time cost is high compared to the per iteration time cost,
+  with only a few iterations the average will be heavily skewed to the average
+  time it takes to create a thread.  However when iterations are high, the
+  average will be more indicative of the time cost per iteration, which is low.
+  If we run the program with a large enough number of iterations, we will
+  eventually come to the exact or correct cost per iteration.
+
+2.1.4
+  For a low number of threads, all options perform similarly because the wait
+  time for locks is almost non-existent.  So the average time costs depend on
+  the creation of threads which is the same for all options.  As the number of
+  threads rises, the queue to receive locks becomes larger and thus each thread
+  must wait longer.
