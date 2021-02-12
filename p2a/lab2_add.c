@@ -50,7 +50,7 @@ void add(long long *pointer, long long value) {
         if(opt_yield){
           sched_yield();
         }
-      }while(__sync_bool_compare_and_swap(pointer, prev, sum) == 0);
+      }while(__sync_val_compare_and_swap(pointer, prev, sum) != prev);
       break;
     default:
       sum = *pointer + value;

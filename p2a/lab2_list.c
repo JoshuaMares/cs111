@@ -7,6 +7,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <sched.h>
+#include <signal.h>
 #include "SortedList.h"
 
 int iterations_arg = 1;
@@ -14,6 +15,13 @@ SortedList_t *list = NULL;
 char sync_arg = '\0';
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int lock = 0;
+
+void catch_fun(int signal_message){
+  if(signal_message == SIGSEGV){
+    fprintf(stderr, "Segmentation Fault\n");
+    exit(2);
+  }
+}
 
 static inline unsigned long tin(struct timespec *spec){
   unsigned long ret = spec->tv_sec;
@@ -23,36 +31,38 @@ static inline unsigned long tin(struct timespec *spec){
 
 void * thread_worker(void *arg){
   SortedListElement_t *element = ((SortedListElement_t *) arg);//pointer to first element deignated for this thread
-  switch(sync_arg){
-    case 'm':
-      pthread_mutex_lock(&mutex);
-      printf("mutex set\n");
-      break;
-    case 's':
-      printf("entering spinlock\n");
-      while(__sync_lock_test_and_set(&lock, 1));
-      break;
-  }
   //add to list
   for(int i = 0; i < iterations_arg; i++){
+    switch(sync_arg){
+      case 'm':
+        pthread_mutex_lock(&mutex);
+        break;
+      case 's':
+        while(__sync_lock_test_and_set(&lock, 1));
+        break;
+    }
     SortedList_insert(list, element+i);
+    switch(sync_arg){
+      case 'm':
+        pthread_mutex_unlock(&mutex);
+        break;
+      case 's':
+        __sync_lock_release(&lock);
+        break;
+    }
   }
 
   //get list length
+  switch(sync_arg){
+    case 'm':
+      pthread_mutex_lock(&mutex);
+      break;
+    case 's':
+      while(__sync_lock_test_and_set(&lock, 1));
+      break;
+  }
   if(SortedList_length(list)){
     //no warning
-  }
-
-  //lookup and delete
-  for(int i = 0; i < iterations_arg; i++){
-    if(SortedList_lookup(list, element[i].key) == NULL){
-      fprintf(stderr, "Corrupted List:lookup\n");
-      exit(2);
-    }
-    if(SortedList_delete(element+i)){
-      fprintf(stderr, "Corrupted List:delete\n");
-      exit(2);
-    }
   }
   switch(sync_arg){
     case 'm':
@@ -61,6 +71,34 @@ void * thread_worker(void *arg){
     case 's':
       __sync_lock_release(&lock);
       break;
+  }
+
+  //lookup and delete
+  for(int i = 0; i < iterations_arg; i++){
+    switch(sync_arg){
+      case 'm':
+        pthread_mutex_lock(&mutex);
+        break;
+      case 's':
+        while(__sync_lock_test_and_set(&lock, 1));
+        break;
+    }
+    if(SortedList_lookup(list, (element+i)->key) == NULL){
+      fprintf(stderr, "Corrupted List:lookup. Iteration:%i\n", i);
+      exit(2);
+    }
+    if(SortedList_delete(element+i)){
+      fprintf(stderr, "Corrupted List:delete. Iteration:%i\n", i);
+      exit(2);
+    }
+    switch(sync_arg){
+      case 'm':
+        pthread_mutex_unlock(&mutex);
+        break;
+      case 's':
+        __sync_lock_release(&lock);
+        break;
+    }
   }
   return NULL;
 }
@@ -74,10 +112,10 @@ int main(int argc, char **argv){
     {"threads",     required_argument,    0,    't'},
     {"iterations",  required_argument,    0,    'i'},
     {"sync",        required_argument,    0,    's'},
-    {"yield",       no_argument,          0,    'y'},
+    {"yield",       required_argument,    0,    'y'},
     {0,             0,                    0,     0}
   };
-  while((option_short = getopt_long(argc, argv, "t:i:s:y", long_options, &option_index)) != -1){
+  while((option_short = getopt_long(argc, argv, "t:i:s:y:", long_options, &option_index)) != -1){
     switch(option_short){
       case 't':
         threads_arg = atoi(optarg);
@@ -108,10 +146,8 @@ int main(int argc, char **argv){
         sync_arg = optarg[0];
         switch(sync_arg){
           case 'm':
-            printf("Sync arg = m\n");
             break;
           case 's':
-            printf("Sync arg = s\n");
             break;
           default:
             printf("Unrecognized sync option.\nValid options include:\n\tm\n\ts\n");
@@ -120,11 +156,12 @@ int main(int argc, char **argv){
         }
         break;
       case '?':
-        printf("Unrecognized option.\nValid options include:\n\t --threads=#\n\t --iterations=#\n\t --sync=char\n\t --sync\n");
+        printf("Unrecognized option.\nValid options include:\n\t --threads=#\n\t --iterations=#\n\t --sync=char\n\t --yield={idl}\n");
         exit(1);
         break;
     }
   }
+  signal(SIGSEGV, catch_fun);
 
   //initializing empty list;
   list = malloc((sizeof(SortedList_t)) * 1);

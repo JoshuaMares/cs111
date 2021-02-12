@@ -8,7 +8,7 @@
 int opt_yield = 0;
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
   SortedListElement_t* temp = list->next;
-  while(temp != list && (strcmp(element->key, temp->key) < 0 )){
+  while(temp != list && (strcmp(temp->key, element->key) < 0 )){
     //<0 means str 1 has less value than str 2
     temp = temp->next;
   }
@@ -16,10 +16,11 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
   if(opt_yield & INSERT_YIELD){
     sched_yield();
   }
-  element->prev = temp;
-  element->next = temp->next;
-  temp->next = element;
-  element->next->prev = element;
+
+  element->prev = temp->prev;
+  temp->prev = element;
+  element->next = temp;
+  element->prev->next = element;
   return;
 }
 
@@ -41,13 +42,13 @@ int SortedList_delete( SortedListElement_t *element){
 
 SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
   SortedListElement_t* temp = list->next;
-  while(temp != list && (strcmp(key, temp->key) < 0)){
+  while(temp != list && (strcmp(temp->key, key) != 0)){
     if(opt_yield & LOOKUP_YIELD){
       sched_yield();
     }
     temp = temp->next;
   }
-  if(temp == list || (strcmp(key, temp->key) != 0)){
+  if(temp == list){
     return NULL;
   }
   return temp;

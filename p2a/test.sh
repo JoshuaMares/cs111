@@ -2,7 +2,7 @@
 
 echo "ADD-NONE START"
 date +"%T"
-for i in 2 4 8 12
+for i in 1 2 4 8 12
 do
   for j in 10 20 40 80 100 1000 10000 100000
   do
@@ -71,11 +71,16 @@ date +"%T"
 
 
 #list testing
+for j in 10 100 1000 10000 20000
+do
+  ./lab2_list --threads=1 --iterations=$j >> lab2_list.csv
+done
+
 echo "LIST-NONE START"
 date +"%T"
 for i in 2 4 8 12
 do
-  for j in 10 20 40 80 100 1000 10000 100000
+  for j in 1 10 100 1000
   do
     ./lab2_list --threads=$i --iterations=$j >> lab2_list.csv
   done
@@ -90,7 +95,7 @@ for y in $YIELDOPTS
 do
   for i in 2 4 8 12
   do
-    for j in 10 20 40 80 100 1000 10000 100000
+    for j in 1 2 4 8 16 32
     do
       ./lab2_list --threads=$i --iterations=$j --yield=$y >> lab2_list.csv
     done
@@ -99,18 +104,38 @@ done
 echo "LIST-YIELDS-NONE END"
 date +"%T"
 
-echo "LIST-YIELDS-NONE START"
+echo "LIST-YIELDS-SYNCS START"
+date +"%T"
+YIELDOPTS="i d l id il dl idl"
+SYNCOPTS="m s"
+for c in $SYNCOPTS
+do
+  for y in $YIELDOPTS
+  do
+    for i in 2 4 8 12
+    do
+      for j in 1 2 4 8 16 32
+      do
+        ./lab2_list --threads=$i --iterations=$j --sync=$c --yield=$y >> lab2_list.csv
+      done
+    done
+  done
+done
+echo "LIST-YIELDS-SYNCS END"
+date +"%T"
+
+echo "LIST-SYNCS START"
 date +"%T"
 SYNCOPTS="m s"
 for c in $SYNCOPTS
 do
-  for i in 2 4 8 12
+  for i in 1 2 4 8 12 16 24
   do
-    for j in 10 20 40 80 100 1000 10000 100000
+    for j in 1 10 100 1000
     do
       ./lab2_list --threads=$i --iterations=$j --sync=$c >> lab2_list.csv
     done
   done
 done
-echo "LIST-YIELDS-NONE END"
+echo "LIST-SYNCS END"
 date +"%T"
