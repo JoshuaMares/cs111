@@ -1,0 +1,80 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab2_add.c
+  This program adds to a counter via multithreading.  The --threads=t argument
+  creates t threads and has a default value of 1.  The --iterations=i adds and
+  subtracts from the counter i number of times each and has a default value of
+  1.  The --yield option forces a yield at the worst possible time to maximize
+  the number of race conditions.  The --sync={msc} synchronizes the threads in
+  one of 3 ways: m)mutexes s)spin locks c)compare and swap.  When the program
+  finishes it prints out the name of the test, number of threads, number of
+  iterations, number of operations performed, total runtime in nanoseconds, the
+  average time per operation in nanoseconds, and the total of the counter at
+  the end of the program.
+
+lab2_list.c
+  This program does the same as lab2_add.c but with a never empty doubly linked
+  circular list.  The threads and iterations argument are the same.  The
+  --sync{ms} option now only supports mutexes and spin locks.  The --yield={idl}
+  option can now take multiple arguments.  The i argument schedules a yield in
+  the insert function, the d argument in the delete function, and the l argument
+  in the lookup and list length functions.  Yield accepts any number and
+  combination of these arguments.
+
+SortedList.h
+  Contains the declaration of the never empty doubly linked circular list as
+  well as the yield option definitions.
+
+SortedList.C
+  Contains the implementation of the list functions.
+
+Makefile
+  A makefile to build the programs.  The default option compile the lab2_add and
+  lab2_list programs.  The tests option runs test cases and places them in their
+  respective csv files.  The graphs option graphs the csv contents and places
+  said graphs in 9 png files.  The dist option compressed all content necessary
+  for this project.  The clean option removes all content created by this
+  makefile.
+
+lab2_add.csv
+  Holds the outputs of the test cases for lab2_add.
+
+lab2_list.csv
+  Holds the outputs of the test cases for lab2_list.
+
+*.png
+  lab2b_1.png ... throughput vs. number of threads for mutex and spin-lock synchronized list operations.
+  lab2b_2.png ... mean time per mutex wait and mean time per operation for mutex-synchronized list operations.
+  lab2b_3.png ... successful iterations vs. threads for each synchronization method.
+  lab2b_4.png ... throughput vs. number of threads for mutex synchronized partitioned lists.
+  lab2b_5.png ... throughput vs. number of threads for spin-lock-synchronized partitioned lists.
+
+test.sh
+  Script that conducts the test cases.
+
+Questions:
+2.3.1
+  For 1 and 2 thread list tests most of the time is spent actually running the
+  critical section.  The actual list operations are taking up the most resources
+  since we are not wasting time waiting on spin locks and mutex locks.  For
+  higher numbers of threads, the spring lock cpu cycles are being wasted waiting
+  for the spin lock to be released.  For higher numbers of threads, the mutex
+  option spends most of its time performing context switchs.
+
+2.3.2
+  The spin lock loop is consuming most of the cycles.  This operation becomes
+  more expensive with larger numbers of threads because rather than waiting for
+  one other thread to finish, each thread is wasting cpu cycles waiting for
+  every other thread to finish.
+
+2.3.3
+  
+
+2.3.4
+
+Sources:
+  Man Pages
+  Piazza Discussions
+  Discussion Section

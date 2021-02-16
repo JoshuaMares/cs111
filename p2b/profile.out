@@ -1,0 +1,93 @@
+Total: 822 samples
+     740  90.0%  90.0%      822 100.0% thread_worker
+      56   6.8%  96.8%       56   6.8% SortedList_lookup
+      25   3.0%  99.9%       25   3.0% __strcmp_avx2
+       1   0.1% 100.0%        1   0.1% SortedList_insert
+       0   0.0% 100.0%      822 100.0% start_thread
+ROUTINE ====================== thread_worker in /home/sohryu/cs111/p2b/lab2_list.c
+   740    822 Total samples (flat / cumulative)
+     .      .   27:   unsigned long ret = spec->tv_sec;
+     .      .   28:   ret = (ret*1000000000) + spec->tv_nsec;
+     .      .   29:   return ret;
+     .      .   30: }
+     .      .   31: 
+---
+     .      .   32: void * thread_worker(void *arg){
+     .      .   33:   SortedListElement_t *element = ((SortedListElement_t *) arg);//pointer to first element deignated for this thread
+     .      .   34:   //add to list
+     .      .   35:   for(int i = 0; i < iterations_arg; i++){
+     .      .   36:     switch(sync_arg){
+     .      .   37:       case 'm':
+     .      .   38:         pthread_mutex_lock(&mutex);
+     .      .   39:         break;
+     .      .   40:       case 's':
+   523    523   41:         while(__sync_lock_test_and_set(&lock, 1));
+     .      .   42:         break;
+     .      .   43:     }
+     .     13   44:     SortedList_insert(list, element+i);
+     .      .   45:     switch(sync_arg){
+     .      .   46:       case 'm':
+     .      .   47:         pthread_mutex_unlock(&mutex);
+     .      .   48:         break;
+     .      .   49:       case 's':
+     .      .   50:         __sync_lock_release(&lock);
+     .      .   51:         break;
+     .      .   52:     }
+     .      .   53:   }
+     .      .   54: 
+     .      .   55:   //get list length
+     .      .   56:   switch(sync_arg){
+     .      .   57:     case 'm':
+     .      .   58:       pthread_mutex_lock(&mutex);
+     .      .   59:       break;
+     .      .   60:     case 's':
+     .      .   61:       while(__sync_lock_test_and_set(&lock, 1));
+     .      .   62:       break;
+     .      .   63:   }
+     .      .   64:   if(SortedList_length(list)){
+     .      .   65:     //no warning
+     .      .   66:   }
+     .      .   67:   switch(sync_arg){
+     .      .   68:     case 'm':
+     .      .   69:       pthread_mutex_unlock(&mutex);
+     .      .   70:       break;
+     .      .   71:     case 's':
+     .      .   72:       __sync_lock_release(&lock);
+     .      .   73:       break;
+     .      .   74:   }
+     .      .   75: 
+     .      .   76:   //lookup and delete
+     .      .   77:   for(int i = 0; i < iterations_arg; i++){
+     .      .   78:     switch(sync_arg){
+     .      .   79:       case 'm':
+     .      .   80:         pthread_mutex_lock(&mutex);
+     .      .   81:         break;
+     .      .   82:       case 's':
+   217    217   83:         while(__sync_lock_test_and_set(&lock, 1));
+     .      .   84:         break;
+     .      .   85:     }
+     .     69   86:     if(SortedList_lookup(list, (element+i)->key) == NULL){
+     .      .   87:       fprintf(stderr, "Corrupted List:lookup. Iteration:%i\n", i);
+     .      .   88:       exit(2);
+     .      .   89:     }
+     .      .   90:     if(SortedList_delete(element+i)){
+     .      .   91:       fprintf(stderr, "Corrupted List:delete. Iteration:%i\n", i);
+     .      .   92:       exit(2);
+     .      .   93:     }
+     .      .   94:     switch(sync_arg){
+     .      .   95:       case 'm':
+     .      .   96:         pthread_mutex_unlock(&mutex);
+     .      .   97:         break;
+     .      .   98:       case 's':
+     .      .   99:         __sync_lock_release(&lock);
+     .      .  100:         break;
+     .      .  101:     }
+     .      .  102:   }
+     .      .  103:   return NULL;
+     .      .  104: }
+---
+     .      .  105: 
+     .      .  106: int main(int argc, char **argv){
+     .      .  107:   int threads_arg = 1;
+     .      .  108:   int option_index = 0;
+     .      .  109:   int option_short;
