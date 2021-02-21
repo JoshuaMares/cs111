@@ -2,32 +2,16 @@ NAME: Joshua Moises Mares
 EMAIL: joshuamares180@gmail.com
 ID: 005154394
 
-lab2_add.c
-  This program adds to a counter via multithreading.  The --threads=t argument
-  creates t threads and has a default value of 1.  The --iterations=i adds and
-  subtracts from the counter i number of times each and has a default value of
-  1.  The --yield option forces a yield at the worst possible time to maximize
-  the number of race conditions.  The --sync={msc} synchronizes the threads in
-  one of 3 ways: m)mutexes s)spin locks c)compare and swap.  When the program
-  finishes it prints out the name of the test, number of threads, number of
-  iterations, number of operations performed, total runtime in nanoseconds, the
-  average time per operation in nanoseconds, and the total of the counter at
-  the end of the program.
-
 lab2_list.c
-  This program does the same as lab2_add.c but with a never empty doubly linked
-  circular list.  The threads and iterations argument are the same.  The
-  --sync{ms} option now only supports mutexes and spin locks.  The --yield={idl}
-  option can now take multiple arguments.  The i argument schedules a yield in
-  the insert function, the d argument in the delete function, and the l argument
-  in the lookup and list length functions.  Yield accepts any number and
-  combination of these arguments.
+  This program does the same as lab2_list.c from the previous project but has
+  been updated to include a lists option where you indicate the number of lists
+  and print the total wait time for locks.
 
 SortedList.h
   Contains the declaration of the never empty doubly linked circular list as
   well as the yield option definitions.
 
-SortedList.C
+SortedList.c
   Contains the implementation of the list functions.
 
 Makefile
@@ -38,11 +22,17 @@ Makefile
   for this project.  The clean option removes all content created by this
   makefile.
 
-lab2_add.csv
-  Holds the outputs of the test cases for lab2_add.
-
-lab2_list.csv
+lab2b_list.csv
   Holds the outputs of the test cases for lab2_list.
+
+lab2_list.gp
+  Creates the graphs needed for the project.
+
+profile.out
+  Time profiles.
+
+raw.gperf
+  Contains cpu data needed to create profile.out
 
 *.png
   lab2b_1.png ... throughput vs. number of threads for mutex and spin-lock synchronized list operations.
@@ -78,7 +68,20 @@ Questions:
   total.
 
 2.3.4
-
+  As the number of lists increase, so does the aggregated throughput.  This is
+  because each thread only has to wait for a specific list that most likely is
+  not being used by another thread at the same time.  This allows each thread to
+  be able to do more work without waiting on locks.  The throughput should
+  increase up to the point where the number of lists equals or exceeds the
+  number of possible hashes.  In my program I moduloed the first character in
+  the key by the number of lists.  Given my range of 0-z ascii, this gives me 75
+  hashes, which is a little under the total amount of ascii printable characters.
+  Once the number of lists exceeds the number of hashes we have a list for each
+  character and given a randomized input, lock wait time should be almost
+  non-existant.  The throughput of a n-way partitioned list should be equivalent
+  to a single list with less threads.  This can be seen in graph 4 but not so
+  so much graph 5 but that is most likely due to some error I cannot find.
+  Performance from graph 5 should be similar to graph 4 albeit a little worse.
 
 Sources:
   Man Pages

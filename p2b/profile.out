@@ -305,3 +305,111 @@ ROUTINE ====================== thread_worker in /home/sohryu/cs111/p2b/lab2_list
      .      .  130:   int threads_arg = 1;
      .      .  131:   int option_index = 0;
      .      .  132:   int option_short;
+Total: 926 samples
+     849  91.7%  91.7%      926 100.0% thread_worker
+      63   6.8%  98.5%       63   6.8% __strcmp_avx2
+       6   0.6%  99.1%        6   0.6% SortedList_lookup
+       5   0.5%  99.7%        5   0.5% SortedList_insert
+       2   0.2%  99.9%        2   0.2% _init
+       1   0.1% 100.0%        1   0.1% tin
+       0   0.0% 100.0%      926 100.0% start_thread
+ROUTINE ====================== thread_worker in /home/sohryu/cs111/p2b/lab2_list.c
+   849    926 Total samples (flat / cumulative)
+     .      .   37:   unsigned long ret = spec->tv_sec;
+     .      .   38:   ret = (ret*1000000000) + spec->tv_nsec;
+     .      .   39:   return ret;
+     .      .   40: }
+     .      .   41: 
+---
+     .      .   42: void * thread_worker(void *arg){
+     .      .   43:   thread_arg_t temp = *((thread_arg_t *) arg);
+     .      .   44:   SortedListElement_t *element = temp.earg;//pointer to first element designated for this thread
+     .      .   45:   int list_number = element->key[0] % lists_arg;
+     .      .   46:   //add to list
+     .      .   47:   for(int i = 0; i < iterations_arg; i++){
+     .      .   48:     clock_gettime(CLOCK_MONOTONIC, lock_start_time + temp.thread_number);
+     .      .   49:     switch(sync_arg){
+     .      .   50:       case 'm':
+     .      .   51:         list_number = (element+i)->key[0] % lists_arg;
+     .      .   52:         pthread_mutex_lock(mutex + list_number);
+     .      .   53:         break;
+     .      .   54:       case 's':
+   519    519   55:         while(__sync_lock_test_and_set(lock + list_number, 1));
+     .      .   56:         break;
+     .      .   57:     }
+     .      .   58:     clock_gettime(CLOCK_MONOTONIC, lock_end_time + temp.thread_number);
+     .      .   59:     wait_time[temp.thread_number] += tin(lock_end_time + temp.thread_number) - tin(lock_start_time + temp.thread_number);
+     .     37   60:     SortedList_insert(&list[list_number], element+i);
+     .      .   61:     switch(sync_arg){
+     .      .   62:       case 'm':
+     .      .   63:         pthread_mutex_unlock(mutex + list_number);
+     .      .   64:         break;
+     .      .   65:       case 's':
+     .      .   66:         __sync_lock_release(lock + list_number);
+     .      .   67:         break;
+     .      .   68:     }
+     .      .   69:   }
+     .      .   70: 
+     .      .   71:   //get list length
+     .      .   72:   clock_gettime(CLOCK_MONOTONIC, lock_start_time + temp.thread_number);
+     .      .   73:   switch(sync_arg){
+     .      .   74:     case 'm':
+     .      .   75:       pthread_mutex_lock(mutex);
+     .      .   76:       break;
+     .      .   77:     case 's':
+     1      1   78:       while(__sync_lock_test_and_set(lock, 1));
+     .      .   79:       break;
+     .      .   80:   }
+     .      .   81:   clock_gettime(CLOCK_MONOTONIC, lock_end_time + temp.thread_number);
+     .      .   82:   wait_time[temp.thread_number] += tin(lock_end_time + temp.thread_number) - tin(lock_start_time + temp.thread_number);
+     .      .   83:   if(SortedList_length(list)){
+     .      .   84:     //no warning
+     .      .   85:   }
+     .      .   86:   switch(sync_arg){
+     .      .   87:     case 'm':
+     .      .   88:       pthread_mutex_unlock(mutex);
+     .      .   89:       break;
+     .      .   90:     case 's':
+     .      .   91:       __sync_lock_release(lock);
+     .      .   92:       break;
+     .      .   93:   }
+     .      .   94: 
+     .      .   95:   //lookup and delete
+     .      .   96:   clock_gettime(CLOCK_MONOTONIC, lock_start_time + temp.thread_number);
+     .      .   97:   for(int i = 0; i < iterations_arg; i++){
+     .      .   98:     switch(sync_arg){
+     .      .   99:       case 'm':
+     .      .  100:         list_number = (element+i)->key[0] % lists_arg;
+     .      .  101:         pthread_mutex_lock(mutex + list_number);
+     .      .  102:         break;
+     .      .  103:       case 's':
+   329    329  104:         while(__sync_lock_test_and_set(lock + list_number, 1));
+     .      .  105:         break;
+     .      .  106:     }
+     .      .  107:     clock_gettime(CLOCK_MONOTONIC, lock_end_time + temp.thread_number);
+     .      1  108:     wait_time[temp.thread_number] += tin(lock_end_time + temp.thread_number) - tin(lock_start_time + temp.thread_number);
+     .     39  109:     if(SortedList_lookup(list + list_number, (element+i)->key) == NULL){
+     .      .  110:       fprintf(stderr, "Corrupted List:lookup. Iteration:%i\n", i);
+     .      .  111:       exit(2);
+     .      .  112:     }
+     .      .  113:     if(SortedList_delete(element+i)){
+     .      .  114:       fprintf(stderr, "Corrupted List:delete. Iteration:%i\n", i);
+     .      .  115:       exit(2);
+     .      .  116:     }
+     .      .  117:     switch(sync_arg){
+     .      .  118:       case 'm':
+     .      .  119:         pthread_mutex_unlock(mutex + list_number);
+     .      .  120:         break;
+     .      .  121:       case 's':
+     .      .  122:         __sync_lock_release(lock + list_number);
+     .      .  123:         break;
+     .      .  124:     }
+     .      .  125:   }
+     .      .  126:   return NULL;
+     .      .  127: }
+---
+     .      .  128: 
+     .      .  129: int main(int argc, char **argv){
+     .      .  130:   int threads_arg = 1;
+     .      .  131:   int option_index = 0;
+     .      .  132:   int option_short;
