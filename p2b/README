@@ -70,9 +70,15 @@ Questions:
   every other thread to finish.
 
 2.3.3
-  
+  Average lock time increases drastically because each thread waits for an
+  increasing amount of time for each thread.  Average completion time per
+  operation increases less drastically since at least one thread is able to do
+  work so the total completion time is divided by 3.  Wait time per operation
+  increases quicker than completion time per operation due to redundancy in the
+  total.
 
 2.3.4
+
 
 Sources:
   Man Pages

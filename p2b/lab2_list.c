@@ -11,10 +11,11 @@
 #include "SortedList.h"
 
 int iterations_arg = 1;
+int lists_arg = 1;
 SortedList_t *list = NULL;
 char sync_arg = '\0';
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static int lock = 0;
+static pthread_mutex_t *mutex = NULL;
+static int *lock = NULL;
 struct timespec *lock_start_time;
 struct timespec *lock_end_time;
 unsigned long *wait_time;
@@ -41,26 +42,28 @@ static inline unsigned long tin(struct timespec *spec){
 void * thread_worker(void *arg){
   thread_arg_t temp = *((thread_arg_t *) arg);
   SortedListElement_t *element = temp.earg;//pointer to first element designated for this thread
+  int list_number = element->key[0] % lists_arg;
   //add to list
   for(int i = 0; i < iterations_arg; i++){
     clock_gettime(CLOCK_MONOTONIC, lock_start_time + temp.thread_number);
     switch(sync_arg){
       case 'm':
-        pthread_mutex_lock(&mutex);
+        list_number = (element+i)->key[0] % lists_arg;
+        pthread_mutex_lock(mutex + list_number);
         break;
       case 's':
-        while(__sync_lock_test_and_set(&lock, 1));
+        while(__sync_lock_test_and_set(lock + list_number, 1));
         break;
     }
     clock_gettime(CLOCK_MONOTONIC, lock_end_time + temp.thread_number);
     wait_time[temp.thread_number] += tin(lock_end_time + temp.thread_number) - tin(lock_start_time + temp.thread_number);
-    SortedList_insert(list, element+i);
+    SortedList_insert(&list[list_number], element+i);
     switch(sync_arg){
       case 'm':
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(mutex + list_number);
         break;
       case 's':
-        __sync_lock_release(&lock);
+        __sync_lock_release(lock + list_number);
         break;
     }
   }
@@ -69,10 +72,10 @@ void * thread_worker(void *arg){
   clock_gettime(CLOCK_MONOTONIC, lock_start_time + temp.thread_number);
   switch(sync_arg){
     case 'm':
-      pthread_mutex_lock(&mutex);
+      pthread_mutex_lock(mutex);
       break;
     case 's':
-      while(__sync_lock_test_and_set(&lock, 1));
+      while(__sync_lock_test_and_set(lock, 1));
       break;
   }
   clock_gettime(CLOCK_MONOTONIC, lock_end_time + temp.thread_number);
@@ -82,10 +85,10 @@ void * thread_worker(void *arg){
   }
   switch(sync_arg){
     case 'm':
-      pthread_mutex_unlock(&mutex);
+      pthread_mutex_unlock(mutex);
       break;
     case 's':
-      __sync_lock_release(&lock);
+      __sync_lock_release(lock);
       break;
   }
 
@@ -94,15 +97,16 @@ void * thread_worker(void *arg){
   for(int i = 0; i < iterations_arg; i++){
     switch(sync_arg){
       case 'm':
-        pthread_mutex_lock(&mutex);
+        list_number = (element+i)->key[0] % lists_arg;
+        pthread_mutex_lock(mutex + list_number);
         break;
       case 's':
-        while(__sync_lock_test_and_set(&lock, 1));
+        while(__sync_lock_test_and_set(lock + list_number, 1));
         break;
     }
     clock_gettime(CLOCK_MONOTONIC, lock_end_time + temp.thread_number);
     wait_time[temp.thread_number] += tin(lock_end_time + temp.thread_number) - tin(lock_start_time + temp.thread_number);
-    if(SortedList_lookup(list, (element+i)->key) == NULL){
+    if(SortedList_lookup(list + list_number, (element+i)->key) == NULL){
       fprintf(stderr, "Corrupted List:lookup. Iteration:%i\n", i);
       exit(2);
     }
@@ -112,10 +116,10 @@ void * thread_worker(void *arg){
     }
     switch(sync_arg){
       case 'm':
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(mutex + list_number);
         break;
       case 's':
-        __sync_lock_release(&lock);
+        __sync_lock_release(lock + list_number);
         break;
     }
   }
@@ -132,6 +136,7 @@ int main(int argc, char **argv){
     {"iterations",  required_argument,    0,    'i'},
     {"sync",        required_argument,    0,    's'},
     {"yield",       required_argument,    0,    'y'},
+    {"lists",       required_argument,    0,    'l'},
     {0,             0,                    0,     0}
   };
   while((option_short = getopt_long(argc, argv, "t:i:s:y:", long_options, &option_index)) != -1){
@@ -174,8 +179,11 @@ int main(int argc, char **argv){
             break;
         }
         break;
+      case 'l':
+        lists_arg = atoi(optarg);
+        break;
       case '?':
-        printf("Unrecognized option.\nValid options include:\n\t --threads=#\n\t --iterations=#\n\t --sync=char\n\t --yield={idl}\n");
+        printf("Unrecognized option.\nValid options include:\n\t --threads=#\n\t --iterations=#\n\t --sync=char\n\t --yield={idl}\n\t --lists=#\n");
         exit(1);
         break;
     }
@@ -183,10 +191,16 @@ int main(int argc, char **argv){
   signal(SIGSEGV, catch_fun);
 
   //initializing empty list;
-  list = malloc((sizeof(SortedList_t)) * 1);
-  list->next = list;
-  list->prev = list;
-  list->key  = '\0';
+  list = malloc((sizeof(SortedList_t)) * lists_arg);
+  mutex = malloc(sizeof(pthread_mutex_t) * lists_arg);
+  lock = malloc(sizeof(int) * lists_arg);
+  for(int i = 0; i < lists_arg; i++){
+    list[i].next = list + i;
+    list[i].prev = list + i;
+    list[i].key  = '\0';
+    pthread_mutex_init(mutex+i, NULL);
+    lock[i] = 0;
+  }
 
   //creates and initiallizes list elements
   SortedListElement_t *elements = malloc((sizeof(SortedListElement_t)) * threads_arg * iterations_arg);
@@ -292,6 +306,6 @@ int main(int argc, char **argv){
       sum = 0;
       break;
   }
-  printf("list%s%s,%i,%i,%i,%i,%lu,%lu,%lu\n", name2, name3, threads_arg, iterations_arg, 1, total_ops, diff, diff/total_ops, sum);
+  printf("list%s%s,%i,%i,%i,%i,%lu,%lu,%lu\n", name2, name3, threads_arg, iterations_arg, lists_arg, total_ops, diff, diff/total_ops, sum);
   exit(0);//2 if end list length is not == 0name2 =
 }
