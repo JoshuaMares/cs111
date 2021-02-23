@@ -15,12 +15,13 @@ SortedList.c
   Contains the implementation of the list functions.
 
 Makefile
-  A makefile to build the programs.  The default option compile the lab2_add and
-  lab2_list programs.  The tests option runs test cases and places them in their
+  A makefile to build the programs.  The default option compiles the lab2_list 
+  program.  The tests option runs test cases and places them in their
   respective csv files.  The graphs option graphs the csv contents and places
-  said graphs in 9 png files.  The dist option compressed all content necessary
+  said graphs in 5 png files.  The dist option compressed all content necessary
   for this project.  The clean option removes all content created by this
-  makefile.
+  makefile.  The profile option gives us the time profiles for locks and
+  functions.
 
 lab2b_list.csv
   Holds the outputs of the test cases for lab2_list.
