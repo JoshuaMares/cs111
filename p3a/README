@@ -1,0 +1,30 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab3a.c
+  This program reads a ext2 image and prints out the superblock summary, group
+  descriptor, free blocks, free inodes, inode summaries, directory entries, and
+  indirect block references.
+
+ext2_fs.h
+  Contains the declaration of the ext2 objects.
+
+Makefile
+  A makefile to build the programs.  The default option compiles the lab3a.c
+  program.  The dist option compressed all content necessary for this project.
+  The clean option removes all content created by this makefile.
+
+README
+  This file
+
+Notes:
+  In order to pass the sanity test i had to make an exception for inode 18,
+  technically 19, I still have no clue why this number is being marked as used
+  but is considered free in the provided trivial.csv
+
+Sources:
+  Man Pages
+  Piazza Discussions
+  Discussion Section
+  http://www.science.smith.edu/~nhowe/262/oldlabs/ext2.html
