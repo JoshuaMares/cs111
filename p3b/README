@@ -1,0 +1,26 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab3b.py
+  This program reads a ext2 image summary created by lab3a and reports any
+  inconsistencies.  If no inconsistencies are found it exits with code 0.  If a
+  bogus argument is entered or a system call fails it exits with code 1.  If
+  an inconsistency is found it exits with code 2.
+
+Makefile
+  A makefile to build the programs.  The default option creates a link to the
+  lab3b program and gives it the executable permission.  The dist option
+  compressed all content necessary for this project.  The clean option removes
+  all content created by this makefile.
+
+README
+  This file
+
+Notes:
+
+
+Sources:
+  Man Pages
+  Piazza Discussions
+  Discussion Section
