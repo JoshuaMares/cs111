@@ -17,10 +17,11 @@ Makefile
 README
   This file
 
-Notes:
-
-
 Sources:
-  Man Pages
   Piazza Discussions
   Discussion Section
+  http://www.science.smith.edu/~nhowe/262/oldlabs/ext2.html
+  https://www.youtube.com/watch?v=q5uM4VKywbA
+    - video on reading csv files in python
+  https://www.w3schools.com/python/
+    - python tutorials
