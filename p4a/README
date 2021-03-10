@@ -1,0 +1,31 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+my_beaglebone.jpg
+  A picture of my beagebone and me.
+
+connected.png
+  A screenshot showing the usb terminal command session connected to my system
+  showing that I gave it a name and configured network access.
+
+copy.png
+  A screenshot in which I copied my hello world program from my local machine
+  to the beaglebone via sftp.
+
+build_run
+  A screenshot in which I compile and run the previous hello world program on my
+  beaglebone.
+
+git.png
+  A screenshot from a wifi ssh session in which I install git and clone a
+  repository.
+
+Makefile
+  A makefile to build the tarball containing the images, makefile, and README
+  necessary for this project.
+
+README
+  This file
+
+WIFI MAC ADDRESS / HWaddr: 2c:f7:f1:06:c2:1f  
