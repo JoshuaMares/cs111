@@ -7,6 +7,7 @@
 #include <string.h>
 #include <poll.h>
 #include <ctype.h>
+#include <math.h>
 
 #define B 4275
 #define R0 100000.0
@@ -37,17 +38,16 @@ void print_current_time(){
   printf("%d:%d:%d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
-void convert_to_scale(char scale, uint16_t* value){
+void convert_to_scale(char scale, uint16_t value){
   float R = 1023.0 / ((float) value)-1.0;
   R *= R0;
   float C = 1.0/(log(R/R0)/B + 1/298.15) - 273.15;
   float F = (C*9)/5 + 32;
   if(scale == 'F'){
-    *value = F;
+    return F;
   }else{
-    *value = C;
+    return C;
   }
-  return;
 }
 
 void handle_input(char* buf, char* scale, int* log_status, int* period){
@@ -62,11 +62,11 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
   */
   if(strstr(buf, "SCALE=F")){
     printf("SCALE=F\n");
-    *scale = F;
+    *scale = 'F';
   }
   if(strstr(buf, "SCALE=C")){
     printf("SCALE=C\n");
-    *scale = C;
+    *scale = 'C';
   }
   char* pos = strstr(buf, "PERIOD=");
   if(pos){//a return val of null means no string found
@@ -78,13 +78,13 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
   }
   if(strstr(buf, "STOP")){
     printf("STOP\n");
-    log_status = 0;
+    *log_status = 0;
   }
   if(strstr(buf, "START")){
     printf("START\n");
-    log_status = 0;
+    *log_status = 1;
   }
-  char* pos = strstr(buf, "LOG ");
+  pos = strstr(buf, "LOG ");
   if(pos){
     int i = 0;
     while(isprint(pos[i])){//keep printing till we hit a newline
@@ -131,7 +131,7 @@ int main(){
   //signal(SIGINT, do_when_interrupted);
 
   //poll setup
-  struct pollfd = {0, POLLIN, 0};
+  struct pollfd poll_in = {0, POLLIN, 0};
   char buf[256];
 
   //time vars
@@ -139,17 +139,17 @@ int main(){
   clock_gettime(CLOCK_MONOTONIC, &prev_time);
   while(run_flag){
     value = mraa_aio_read(temp_sensor);
-    convert_to_scale(scale, &value);
+    value = convert_to_scale(scale, value);
 
-    clock_gettime(CLOCK_MONOTONIC, &curr_time)
+    clock_gettime(CLOCK_MONOTONIC, &curr_time);
     int diff = curr_time.tv_sec - prev_time.tv_sec;
     if(diff >= period && log_status){
       print_current_time();
-      printf("%f\n", val);
+      printf("%f\n", value);
     }
-    if(poll(&pollfd, 1, 0) > 0){
+    if(poll(&poll_in, 1, 0) > 0){
       read(1, buf, 256);
-      handle_input(buf, scale, log_status, period);
+      handle_input(buf, &scale, &log_status, &period);
     }
   }
 
