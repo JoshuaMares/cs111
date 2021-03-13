@@ -1,5 +1,5 @@
 default:
-	gcc -lmraa -o lab4b -g -Wall -Wextra lab4b.c
+	gcc -lm -lmraa -o lab4b -g -Wall -Wextra lab4b.c
 
 check:
 	bash ./check.sh
