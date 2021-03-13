@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//#include <signal.h>
+#include <signal.h>
 #include <mraa/gpio.h>
 #include <mraa/aio.h>
 #include <string.h>
@@ -11,12 +11,11 @@
 
 //#define B 4275
 //#define R0 100000
-
 sig_atomic_t volatile run_flag = 1;
 mraa_gpio_context button;
 mraa_aio_context temp_sensor;
 const float B = 4275;
-const float R0 100000;
+const float R0 = 100000;
 
 void handle_exit(){
   //close the buttons, polls, and exit with proper status
