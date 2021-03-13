@@ -1,0 +1,37 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab4b.c
+  This program is designed to run on a beaglebone green wireless with a
+  temperature sensor on pin 1 and the button on pin 60.  If logging is enabled,
+  every period seconds the program prints the current time followed by the
+  temperature in Celsius or Fahrenheit.  By default, logging is enabled, the
+  period is 1 second, and the units of temperature are in Fahrenheit.  However,
+  the program is designed to take in various inputs from standard in.  "SCALE=F"
+  will change the units outputted to Fahrenheit.  "SCALE=C" will change units to
+  Celsius.  "PERIOD=" will set the output period to the number of seconds
+  following it.  "STOP" will stop logging temperature reports.  "START" will
+  enable temperature reports.  "LOG " will log the line of input, including
+  the log command itself.  "OFF" will output and log a time-stamped "SHUTDOWN"
+  message and exit.  Pressing the button is equivalent to issueing the OFF
+  command.  The program will exit with with value 0 if no issues were
+  encountered and with 1 if issues arose.
+
+Makefile
+  A makefile to build the programs.  The default option builds the lab4b.c
+  program assuming it is on a beaglebone green with he proper libraries.  The
+  check option runs the test script that checks the program is working properly.
+  The clean option deletes all files associated with the project.  The dist
+  option creates a tartball of all files needed for this project.
+
+README
+  This file
+
+check.sh
+  Bash script that contains the code for the check option in the Makefile.
+
+Sources:
+  Piazza Discussions
+  Discussion Section
+  Man Pages

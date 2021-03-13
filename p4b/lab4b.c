@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
+//#include <signal.h>
 #include <mraa/gpio.h>
 #include <mraa/aio.h>
+#include <string.h>
+#include <poll.h>
+#include <ctype.h>
 
 #define B 4275
 #define R0 100000.0
@@ -10,6 +14,12 @@
 sig_atomic_t volatile run_flag = 1;
 mraa_gpio_context button;
 mraa_aio_context temp_sensor;
+
+static inline unsigned long tin(struct timespec *spec){
+  unsigned long ret = spec->tv_sec;
+  ret = (ret*1000000000) + spec->tv_nsec;
+  return ret;
+}
 
 void handle_exit(){
   //close the buttons, polls, and exit with proper status
@@ -40,7 +50,7 @@ void convert_to_scale(char scale, uint16_t* value){
   return;
 }
 
-void print_message(char* buf, char* scale, int* log_status, int* period){
+void handle_input(char* buf, char* scale, int* log_status, int* period){
   /*
     SCALE=F
     SCALE=C
@@ -50,37 +60,43 @@ void print_message(char* buf, char* scale, int* log_status, int* period){
     LOG line of text
     OFF
   */
-  if(!strcmp(buf, "SCALE=F")){
-    printf("%s\n", buf);
+  if(strstr(buf, "SCALE=F")){
+    printf("SCALE=F\n");
     *scale = F;
-  }else if(!strcmp(buf, "SCALE=C")){
-    printf("%s\n", buf);
-    *scale = C;
-  }else if(!memcmp(buf, "PERIOD=", 7)){
-    printf("%s\n", buf);
-    *period = atoi(buf+7);
-    if(*period == 0){
-      //couldnt be converted to int
-      handle_exit();
-    }
-  }else if(!strcmp(buf, "STOP")){
-    printf("%s\n", buf);
-    log_status = 0;
-  }else if(!strcmp(buf, "START")){
-    printf("%s\n", buf);
-    log_status = 0;
-  }else if(!memcmp(buf, "LOG ")){
-    printf("%s\n", buf);
-  }else if(!strcmp(buf, "OFF")){
-    print_current_time();
-    printf("SHUTDOWN\N");
-    handle_exit();
-  }else{
-    //some invalid stuff
   }
-
-  print_current_time();
-  print
+  if(strstr(buf, "SCALE=C")){
+    printf("SCALE=C\n");
+    *scale = C;
+  }
+  char* pos = strstr(buf, "PERIOD=");
+  if(pos){//a return val of null means no string found
+    *period = atoi(pos+7);//starts reading right after the =
+    printf("PERIOD=%i\n", *period);
+    /*if(*period == 0){//couldnt be converted to int
+      handle_exit();
+    }*/
+  }
+  if(strstr(buf, "STOP")){
+    printf("STOP\n");
+    log_status = 0;
+  }
+  if(strstr(buf, "START")){
+    printf("START\n");
+    log_status = 0;
+  }
+  char* pos = strstr(buf, "LOG ");
+  if(pos){
+    int i = 0;
+    while(isprint(pos[i])){//keep printing till we hit a newline
+      putchar(pos[i]);
+    }
+    printf("\n");
+  }
+  if(strstr(buf, "OFF")){
+    print_current_time();
+    printf("SHUTDOWN\n");
+    handle_exit();
+  }
 }
 
 /*
@@ -92,29 +108,49 @@ void do_when_interrupted(){
 */
 
 void button_press(){
-  run_flag = 0;
+  //run_flag = 0;
+  print_current_time();
+  printf("SHUTDOWN\n");
+  mraa_gpio_close(button);
+  mraa_aio_close(temp_sensor);
+  exit(0);
 }
+
 
 int main(){
   int period = 1;//in seconds
   int log_status = 1;//0 stop 1 start
   char scale = 'F';
-
   uint16_t value;//temp value recieved
 
   //initiate temp_sensor and button
+  button = mraa_gpio_init(60);
+  temp_sensor = mraa_aio_init(1);
   mraa_gpio_dir(button, MRAA_GPIO_IN);
   mraa_gpio_isr(button, MRAA_GPIO_EDGE_RISING, &button_press, NULL);
-  temp_sensor = mraa_aio_init(1);
   //signal(SIGINT, do_when_interrupted);
 
+  //poll setup
+  struct pollfd = {0, POLLIN, 0};
+  char buf[256];
+
+  //time vars
+  struct timespec curr_time, prev_time;
+  clock_gettime(CLOCK_MONOTONIC, &prev_time);
   while(run_flag){
     value = mraa_aio_read(temp_sensor);
     convert_to_scale(scale, &value);
-    if(log_status){
-      print_message();
+
+    clock_gettime(CLOCK_MONOTONIC, &curr_time)
+    int diff = curr_time.tv_sec - prev_time.tv_sec;
+    if(diff >= period && log_status){
+      print_current_time();
+      printf("%f\n", val);
     }
-    sleep(period);
+    if(poll(&pollfd, 1, 0) > 0){
+      read(1, buf, 256);
+      handle_input(buf, scale, log_status, period);
+    }
   }
 
   mraa_gpio_close(button);
