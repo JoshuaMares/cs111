@@ -10,17 +10,11 @@
 #include <math.h>
 
 #define B 4275
-#define R0 100000.0
+#define R0 100000
 
 sig_atomic_t volatile run_flag = 1;
 mraa_gpio_context button;
 mraa_aio_context temp_sensor;
-
-static inline unsigned long tin(struct timespec *spec){
-  unsigned long ret = spec->tv_sec;
-  ret = (ret*1000000000) + spec->tv_nsec;
-  return ret;
-}
 
 void handle_exit(){
   //close the buttons, polls, and exit with proper status
@@ -38,7 +32,7 @@ void print_current_time(){
   printf("%d:%d:%d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
-void convert_to_scale(char scale, uint16_t value){
+float convert_to_scale(char scale, int value){
   float R = 1023.0 / ((float) value)-1.0;
   R *= R0;
   float C = 1.0/(log(R/R0)/B + 1/298.15) - 273.15;
@@ -121,7 +115,7 @@ int main(){
   int period = 1;//in seconds
   int log_status = 1;//0 stop 1 start
   char scale = 'F';
-  uint16_t value;//temp value recieved
+  int value;//temp value recieved
 
   //initiate temp_sensor and button
   button = mraa_gpio_init(60);
@@ -139,7 +133,7 @@ int main(){
   clock_gettime(CLOCK_MONOTONIC, &prev_time);
   while(run_flag){
     value = mraa_aio_read(temp_sensor);
-    value = convert_to_scale(scale, value);
+    float temp_value = convert_to_scale(scale, value);
 
     clock_gettime(CLOCK_MONOTONIC, &curr_time);
     int diff = curr_time.tv_sec - prev_time.tv_sec;
