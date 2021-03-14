@@ -6,7 +6,7 @@
 #include <mraa/aio.h>
 #include <string.h>
 #include <poll.h>
-#include <ctype.h>
+//#include <ctype.h>
 #include <math.h>
 
 //#define B 4275
@@ -30,7 +30,7 @@ void print_current_time(){
   struct tm *tm;
   clock_gettime(CLOCK_REALTIME, &ts);
   tm = localtime(&(ts.tv_sec));
-  printf("%d:%d:%d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
+  printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 float convert_to_scale(char scale, int value){
@@ -45,7 +45,7 @@ float convert_to_scale(char scale, int value){
   }
 }
 
-void handle_input(char* buf, char* scale, int* log_status, int* period){
+handle_command(char* buf, char* scale, int* log_status, int* period){
   /*
     SCALE=F
     SCALE=C
@@ -55,43 +55,61 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
     LOG line of text
     OFF
   */
-  if(strstr(buf, "SCALE=F")){
-    printf("SCALE=F\n");
-    *scale = 'F';
-  }
-  if(strstr(buf, "SCALE=C")){
-    printf("SCALE=C\n");
-    *scale = 'C';
-  }
   char* pos = strstr(buf, "PERIOD=");
-  if(pos){//a return val of null means no string found
+  char* pos2 = strstr(buf, "LOG ");
+  if(pos2){
+    printf("%s\n", pos2);
+  }else if(pos){//a return val of null means no string found
     *period = atoi(pos+7);//starts reading right after the =
     printf("PERIOD=%i\n", *period);
     /*if(*period == 0){//couldnt be converted to int
       handle_exit();
     }*/
-  }
-  if(strstr(buf, "STOP")){
+  }else if(strstr(buf, "SCALE=F")){
+    printf("SCALE=F\n");
+    *scale = 'F';
+  }else if(strstr(buf, "SCALE=C")){
+    printf("SCALE=C\n");
+    *scale = 'C';
+  }else if(strstr(buf, "STOP")){
     printf("STOP\n");
     *log_status = 0;
-  }
-  if(strstr(buf, "START")){
+  }else if(strstr(buf, "START")){
     printf("START\n");
     *log_status = 1;
-  }
-  pos = strstr(buf, "LOG ");
-  if(pos){
-    int i = 0;
-    while(isprint(pos[i])){//keep printing till we hit a newline
-      putchar(pos[i]);
-    }
-    printf("\n");
-  }
-  if(strstr(buf, "OFF")){
+  }else if(strstr(buf, "OFF")){
     print_current_time();
     printf("SHUTDOWN\n");
     handle_exit();
+  }else{
+    printf("%s\n", buf);
   }
+  return;
+}
+
+void handle_input(char* buf, char* scale, int* log_status, int* period){
+  /*
+  add each char to command buffer
+  when we reach a newline or eof indicator handle command
+  reset command length
+  */
+  char command_buf[256];
+  int clength = 0;
+  for(int i = 0; i < 256; i++){
+    command_buf[j] = buf[i];
+    clength++;
+    if(buf[i] == '\n'){
+      command_buf[j+1] = '\0';
+      handle_command(command_buf, scale, log_status, period);
+      clength = 0;
+    }
+    if(buf[i] == '\0'){
+      command_buf[j+1] = '\0';
+      handle_command(command_buf, scale, log_status, period);
+      break;
+    }
+  }
+  return;
 }
 
 /*
@@ -132,16 +150,23 @@ int main(){
   //time vars
   struct timespec curr_time, prev_time;
   clock_gettime(CLOCK_MONOTONIC, &prev_time);
+
+  //first reading before any input can be proccessed
+  value = mraa_aio_read(temp_sensor);
+  temp_value = convert_to_scale(scale, value);
+  print_current_time();
+  printf("%3.1f\n", temp_value);
+
   while(run_flag){
     value = mraa_aio_read(temp_sensor);
-    float temp_value = convert_to_scale(scale, value);
+    temp_value = convert_to_scale(scale, value);
 
     clock_gettime(CLOCK_MONOTONIC, &curr_time);
     int diff = curr_time.tv_sec - prev_time.tv_sec;
     if(diff >= period && log_status){
       prev_time = curr_time;
       print_current_time();
-      printf("%f\n", temp_value);
+      printf("%3.1f\n", temp_value);
     }
     if(poll(&poll_in, 1, 0) > 0){
       read(1, buf, 256);
