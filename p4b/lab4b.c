@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
+//#include <errno.h>
 
 //#define B 4275
 //#define R0 100000
@@ -21,6 +21,7 @@ mraa_gpio_context button;
 mraa_aio_context temp_sensor;
 const float B = 4275;
 const float R0 = 100000;
+int ofd = 0;
 
 void handle_exit(){
   //close the buttons, polls, and exit with proper status
@@ -30,12 +31,12 @@ void handle_exit(){
   exit(0);
 }
 
-void print_current_time(){
+void print_current_time(int fd){
   struct timespec ts;
   struct tm *tm;
   clock_gettime(CLOCK_REALTIME, &ts);
   tm = localtime(&(ts.tv_sec));
-  printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
+  dprintf(fd, "%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 float convert_to_scale(char scale, int value){
@@ -64,30 +65,55 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
   char* pos2 = strstr(buf, "LOG ");
   if(pos2){
     printf("%s\n", pos2);
+    if(ofd){
+      dprintf(ofd, "%s\n", pos2);
+    }
   }else if(pos){//a return val of null means no string found
     *period = atoi(pos+7);//starts reading right after the =
     printf("PERIOD=%i\n", *period);
+    if(ofd){
+      dprintf(ofd, "PERIOD=%i\n", *period);
+    }
     /*if(*period == 0){//couldnt be converted to int
       handle_exit();
     }*/
   }else if(strstr(buf, "SCALE=F")){
     printf("SCALE=F\n");
+    if(ofd){
+      dprintf(ofd, "SCALE=F\n");
+    }
     *scale = 'F';
   }else if(strstr(buf, "SCALE=C")){
     printf("SCALE=C\n");
+    if(ofd){
+      dprintf(ofd, "SCALE=C\n");
+    }
     *scale = 'C';
   }else if(strstr(buf, "STOP")){
     printf("STOP\n");
+    if(ofd){
+      dprintf(ofd, "STOP\n");
+    }
     *log_status = 0;
   }else if(strstr(buf, "START")){
     printf("START\n");
+    if(ofd){
+      dprintf(ofd, "START\n");
+    }
     *log_status = 1;
   }else if(strstr(buf, "OFF")){
-    print_current_time();
+    print_current_time(1);
     printf("SHUTDOWN\n");
+    if(ofd){
+      print_current_time(ofd);
+      dprintf(ofd, "SHUTDOWN\n");
+    }
     handle_exit();
   }else{
     printf("%s\n", buf);
+    if(ofd){
+      dprintf(ofd, "%s\n", buf);
+    }
   }
   return;
 }
@@ -128,8 +154,12 @@ void do_when_interrupted(){
 
 void button_press(){
   //run_flag = 0;
-  print_current_time();
+  print_current_time(1);
   printf("SHUTDOWN\n");
+  if(ofd){
+    print_current_time(ofd);
+    dprintf(ofd, "SHUTDOWN\n");
+  }
   mraa_gpio_close(button);
   mraa_aio_close(temp_sensor);
   exit(0);
@@ -171,22 +201,15 @@ int main(int argc, char **argv){
         break;
       case 'l':
         log_name = optarg;
+        ofd = creat(log_name, 0666);
+        if(ofd < 0){
+          fprintf(stderr, "Error opening file: %s\n", log_name);
+        }
         break;
       case '?':
         printf("Unrecognized option.\n");
         exit(1);
         break;
-    }
-  }
-  if(log_name){
-    int ofd = creat(log_name, 0666);
-    if(ofd>=0){
-      close(1);
-      dup(ofd);
-      close(ofd);
-    }else{
-      fprintf(stderr, "Could not open output file: %s\n%s\n", log_name, strerror(errno));
-      exit(1);
     }
   }
 
@@ -208,8 +231,12 @@ int main(int argc, char **argv){
   //first reading before any input can be proccessed
   value = mraa_aio_read(temp_sensor);
   float temp_value = convert_to_scale(scale, value);
-  print_current_time();
+  print_current_time(1);
   printf("%3.1f\n", temp_value);
+  if(ofd){
+    print_current_time(ofd);
+    dprintf(ofd, "%3.1f\n", temp_value);
+  }
 
   while(run_flag){
     value = mraa_aio_read(temp_sensor);
@@ -219,8 +246,12 @@ int main(int argc, char **argv){
     int diff = curr_time.tv_sec - prev_time.tv_sec;
     if(diff >= period && log_status){
       prev_time = curr_time;
-      print_current_time();
+      print_current_time(1);
       printf("%3.1f\n", temp_value);
+      if(ofd){
+        print_current_time(ofd);
+        dprintf(ofd, "%3.1f\n", temp_value);
+      }
     }
     if(poll(&poll_in, 1, 0) > 0){
       read(1, buf, 256);
