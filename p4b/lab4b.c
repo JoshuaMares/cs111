@@ -61,6 +61,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     LOG line of text
     OFF
   */
+  buf[strlen(buf) - 1] = '\0';
   char* pos = strstr(buf, "PERIOD=");
   char* pos2 = strstr(buf, "LOG ");
   if(pos2){
