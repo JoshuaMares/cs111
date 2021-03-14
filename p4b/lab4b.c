@@ -258,7 +258,7 @@ int main(int argc, char **argv){
       }
     }
     if(poll(&poll_in, 1, 0) > 0){
-      read(1, buf, 256);
+      read(0, buf, 256);
       handle_input(buf, &scale, &log_status, &period);
     }
   }
