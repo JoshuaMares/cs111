@@ -258,8 +258,8 @@ int main(int argc, char **argv){
       }
     }
     if(poll(&poll_in, 1, 0) > 0){
-      read(0, buf, 256);
-      buf[strlen(buf) - 1] = '\0';
+      int len = read(0, buf, 256);
+      buf[len] = '\0';
       printf("input is:%s\n", buf);
       handle_input(buf, &scale, &log_status, &period);
     }
