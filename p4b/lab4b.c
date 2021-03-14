@@ -125,7 +125,6 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
   when we reach a newline or eof indicator handle command
   reset command length
   */
-  /*
   char command_buf[256];
   int clength = 0;
   int i;
@@ -133,19 +132,19 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
     command_buf[clength] = buf[i];
     clength++;
     if(buf[i] == '\n'){
-      command_buf[clength+1] = '\0';
+      command_buf[clength] = '\0';
       handle_command(command_buf, scale, log_status, period);
       clength = 0;
     }
     if(buf[i] == '\0'){
-      command_buf[clength+1] = '\0';
+      command_buf[clength] = '\0';
       handle_command(command_buf, scale, log_status, period);
       break;
     }
   }
-  return;*/
-  handle_command(buf, scale, log_status, period);
   return;
+  //handle_command(buf, scale, log_status, period);
+  //return;
 }
 
 /*
