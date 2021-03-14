@@ -8,6 +8,7 @@
 #include <poll.h>
 //#include <ctype.h>
 #include <math.h>
+#include <getopt.h>
 
 //#define B 4275
 //#define R0 100000
@@ -136,6 +137,40 @@ int main(){
   int log_status = 1;//0 stop 1 start
   char scale = 'F';
   int value;//temp value recieved
+  int option_index = 0;
+  int option_short;
+
+  static struct option long_options[] = {
+    {"period",      required_argument,    0,    'p'},
+    {"scale",       required_argument,    0,    's'},
+    {0,             0,                    0,     0}
+  };
+  while((option_short = getopt_long(argc, argv, "t:i:s:y:", long_options, &option_index)) != -1){
+    switch(option_short){
+      case 'p':
+        period = atoi(optarg);
+        break;
+      case 's':
+        sync_arg = optarg[0];
+        switch(sync_arg){
+          case 'F':
+            scale = 'F';
+            break;
+          case 'C':
+            scale = 'C';
+            break;
+          default:
+            printf("Unrecognized scale argument\n");
+            exit(1);
+            break;
+        }
+        break;
+      case '?':
+        printf("Unrecognized option.\n");
+        exit(1);
+        break;
+    }
+  }
 
   //initiate temp_sensor and button
   button = mraa_gpio_init(60);
