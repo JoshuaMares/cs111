@@ -9,6 +9,10 @@
 //#include <ctype.h>
 #include <math.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 
 //#define B 4275
 //#define R0 100000
@@ -144,10 +148,10 @@ int main(int argc, char **argv){
   static struct option long_options[] = {
     {"period",      required_argument,    0,    'p'},
     {"scale",       required_argument,    0,    's'},
-    {"log",         required_argument,    0,    ''},
+    {"log",         required_argument,    0,    'l'},
     {0,             0,                    0,     0}
   };
-  while((option_short = getopt_long(argc, argv, "p:s:", long_options, &option_index)) != -1){
+  while((option_short = getopt_long(argc, argv, "p:s:l:", long_options, &option_index)) != -1){
     switch(option_short){
       case 'p':
         period = atoi(optarg);
@@ -166,7 +170,7 @@ int main(int argc, char **argv){
         }
         break;
       case 'l':
-        log_name = optarg
+        log_name = optarg;
         break;
       case '?':
         printf("Unrecognized option.\n");
@@ -181,7 +185,7 @@ int main(int argc, char **argv){
       dup(ofd);
       close(ofd);
     }else{
-      fprintf(stderr, "Could not open output file: %s\n%s\n", log_file, strerror(errno));
+      fprintf(stderr, "Could not open output file: %s\n%s\n", log_name, strerror(errno));
       exit(1);
     }
   }
