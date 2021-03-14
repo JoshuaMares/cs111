@@ -45,7 +45,7 @@ float convert_to_scale(char scale, int value){
   }
 }
 
-handle_command(char* buf, char* scale, int* log_status, int* period){
+void handle_command(char* buf, char* scale, int* log_status, int* period){
   /*
     SCALE=F
     SCALE=C
@@ -95,16 +95,17 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
   */
   char command_buf[256];
   int clength = 0;
-  for(int i = 0; i < 256; i++){
+  int i;
+  for(i = 0; i < 256; i++){
     command_buf[j] = buf[i];
     clength++;
     if(buf[i] == '\n'){
-      command_buf[j+1] = '\0';
+      command_buf[clength+1] = '\0';
       handle_command(command_buf, scale, log_status, period);
       clength = 0;
     }
     if(buf[i] == '\0'){
-      command_buf[j+1] = '\0';
+      command_buf[clength+1] = '\0';
       handle_command(command_buf, scale, log_status, period);
       break;
     }
@@ -153,7 +154,7 @@ int main(){
 
   //first reading before any input can be proccessed
   value = mraa_aio_read(temp_sensor);
-  temp_value = convert_to_scale(scale, value);
+  float temp_value = convert_to_scale(scale, value);
   print_current_time();
   printf("%3.1f\n", temp_value);
 
