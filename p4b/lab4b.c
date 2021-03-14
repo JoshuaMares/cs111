@@ -132,7 +132,7 @@ void button_press(){
 }
 
 
-int main(){
+int main(int argc, char **argv){
   int period = 1;//in seconds
   int log_status = 1;//0 stop 1 start
   char scale = 'F';
@@ -145,19 +145,17 @@ int main(){
     {"scale",       required_argument,    0,    's'},
     {0,             0,                    0,     0}
   };
-  while((option_short = getopt_long(argc, argv, "t:i:s:y:", long_options, &option_index)) != -1){
+  while((option_short = getopt_long(argc, argv, "p:s:", long_options, &option_index)) != -1){
     switch(option_short){
       case 'p':
         period = atoi(optarg);
         break;
       case 's':
-        sync_arg = optarg[0];
-        switch(sync_arg){
+        scale = optarg[0];
+        switch(scale){
           case 'F':
-            scale = 'F';
             break;
           case 'C':
-            scale = 'C';
             break;
           default:
             printf("Unrecognized scale argument\n");
