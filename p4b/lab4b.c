@@ -103,9 +103,11 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     }
     *log_status = 1;
   }else if(strstr(buf, "OFF")){
+    printf("OFF\n");
     print_current_time(1);
     printf("SHUTDOWN\n");
     if(ofd){
+      dprintf(ofd, "OFF\n");
       print_current_time(ofd);
       dprintf(ofd, "SHUTDOWN\n");
     }
