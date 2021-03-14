@@ -30,6 +30,7 @@ README
 
 check.sh
   Bash script that contains the code for the check option in the Makefile.
+  Simply sends commands to running process and checks if commands were logged.
 
 Sources:
   Piazza Discussions

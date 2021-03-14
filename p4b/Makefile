@@ -8,4 +8,4 @@ clean:
 	rm -f lab4b lab4b-005154394.tar.gz
 
 dist: default
-		tar -czvf lab4b-005154394.tar.gz lab4b.c Makefile README check.sh
+	tar -czvf lab4b-005154394.tar.gz lab4b.c Makefile README check.sh
