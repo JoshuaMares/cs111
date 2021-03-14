@@ -75,9 +75,10 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     if(ofd){
       dprintf(ofd, "PERIOD=%i\n", *period);
     }
-    /*if(*period == 0){//couldnt be converted to int
+    if(*period == 0){//couldnt be converted to int
+      printf("Period line is: %s\n", pos);
       handle_exit();
-    }*/
+    }
   }else if(strstr(buf, "SCALE=F")){
     printf("SCALE=F\n");
     if(ofd){
