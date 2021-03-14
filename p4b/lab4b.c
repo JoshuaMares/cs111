@@ -139,6 +139,7 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &curr_time);
     int diff = curr_time.tv_sec - prev_time.tv_sec;
     if(diff >= period && log_status){
+      prev_time = curr_time;
       print_current_time();
       printf("%f\n", temp_value);
     }
