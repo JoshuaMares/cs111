@@ -97,7 +97,7 @@ void handle_input(char* buf, char* scale, int* log_status, int* period){
   int clength = 0;
   int i;
   for(i = 0; i < 256; i++){
-    command_buf[j] = buf[i];
+    command_buf[clength] = buf[i];
     clength++;
     if(buf[i] == '\n'){
       command_buf[clength+1] = '\0';
