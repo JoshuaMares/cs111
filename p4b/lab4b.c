@@ -64,9 +64,9 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
   char* pos = strstr(buf, "PERIOD=");
   char* pos2 = strstr(buf, "LOG ");
   if(pos2){
-    printf("%s\n", pos2);
+    printf("%s", pos2);//may need newline
     if(ofd){
-      dprintf(ofd, "%s\n", pos2);
+      dprintf(ofd, "%s", pos2);//may need newline
     }
   }else if(pos){//a return val of null means no string found
     *period = atoi(pos+7);//starts reading right after the =
@@ -74,10 +74,10 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     if(ofd){
       dprintf(ofd, "PERIOD=%i\n", *period);
     }
-    if(*period == 0){//couldnt be converted to int
+    /*if(*period == 0){//couldnt be converted to int
       printf("Period line is: %s\n", pos);
       handle_exit();
-    }
+    }*/
   }else if(strstr(buf, "SCALE=F")){
     printf("SCALE=F\n");
     if(ofd){
@@ -259,7 +259,7 @@ int main(int argc, char **argv){
     if(poll(&poll_in, 1, 0) > 0){
       int len = read(0, buf, 256);
       buf[len] = '\0';
-      printf("input is:%s\n", buf);
+      //printf("input is:%s\n", buf);
       handle_input(buf, &scale, &log_status, &period);
     }
   }
