@@ -136,6 +136,7 @@ int main(int argc, char **argv){
   int period = 1;//in seconds
   int log_status = 1;//0 stop 1 start
   char scale = 'F';
+  char* log_name = NULL;
   int value;//temp value recieved
   int option_index = 0;
   int option_short;
@@ -143,6 +144,7 @@ int main(int argc, char **argv){
   static struct option long_options[] = {
     {"period",      required_argument,    0,    'p'},
     {"scale",       required_argument,    0,    's'},
+    {"log",         required_argument,    0,    ''},
     {0,             0,                    0,     0}
   };
   while((option_short = getopt_long(argc, argv, "p:s:", long_options, &option_index)) != -1){
@@ -163,10 +165,24 @@ int main(int argc, char **argv){
             break;
         }
         break;
+      case 'l':
+        log_name = optarg
+        break;
       case '?':
         printf("Unrecognized option.\n");
         exit(1);
         break;
+    }
+  }
+  if(log_name){
+    int ofd = creat(log_name, 0666);
+    if(ofd>=0){
+      close(1);
+      dup(ofd);
+      close(ofd);
+    }else{
+      fprintf(stderr, "Could not open output file: %s\n%s\n", log_file, strerror(errno));
+      exit(1);
     }
   }
 

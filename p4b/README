@@ -16,7 +16,7 @@ lab4b.c
   the log command itself.  "OFF" will output and log a time-stamped "SHUTDOWN"
   message and exit.  Pressing the button is equivalent to issueing the OFF
   command.  The program will exit with with value 0 if no issues were
-  encountered and with 1 if issues arose.
+  encountered.
 
 Makefile
   A makefile to build the programs.  The default option builds the lab4b.c
