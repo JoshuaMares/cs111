@@ -336,7 +336,9 @@ int main(int argc, char **argv){
   if(port_number == 0){
     fprintf(stderr, "Error reading port number\n");
   }
+  printf("Exec name is: %s\n", argv[0]);
   if(!strcmp(argv[0], "lab4c_tls")){
+    printf("TLS option chosen\n");
     tls_ver = 1;
   }
 
