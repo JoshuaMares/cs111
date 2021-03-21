@@ -1,0 +1,33 @@
+NAME: Joshua Moises Mares
+EMAIL: joshuamares180@gmail.com
+ID: 005154394
+
+lab4c.c
+  This program is an extension of lab4b.  It now also supports id, host, and
+  port number options.  The host and port number options are used to establish
+  a socket connection to the designated server.  The id option is used to
+  identify your connection.  If the executable is called as lab4c_tcp it
+  establishes a tcp connection to the server and if called as lab4c_tls through
+  a tls connection.  Rather than accept commands from stdin, it accepts commands
+  through the server socket.  In addition, rather than print to stdout, we print
+  to the server.
+
+Makefile
+  A makefile to build the programs.  The default option builds the lab4c.c
+  program assuming it is on a beaglebone green with he proper libraries.  It
+  then creates 2 executable links, lab4c_tcp and lab4c_tls.  The clean option
+  deletes all files associated with the project.  The dist option creates a
+  tartball of all files needed for this project.
+
+README
+  This file
+
+Notes:
+  Although the spec does not require it.  I kept and updated the button
+  implementation to close the program properly should any unforeseen errors
+  occur.
+
+Sources:
+  Piazza Discussions
+  Discussion Section
+  Man Pages
