@@ -46,7 +46,7 @@ int client_connect(char* host_name, unsigned int port){
 SSL_CTX* ssl_init(){
   SSL_CTX* newContext = NULL;
   SSL_library_init();
-  SSL_load_error_string();
+  SSL_load_error_strings();
   OpenSSL_add_all_algorithms();
   newContext = SSL_CTX_new(TLSv1_client_method());
   return newContext;
@@ -88,7 +88,7 @@ void ssl_print_current_time(){
   tm = localtime(&(ts.tv_sec));
   char time_buf[256];
   sprintf(time_buf, "%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
-  ssl_write(ssl_client, ssl_buf, strlen(ssl_buf));
+  SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
 }
 
 float convert_to_scale(char scale, int value){
@@ -118,7 +118,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
   if(pos2){
     if(tls_ver){
       sprintf(buf, "%s", pos2);
-      ssl_write(ssl_client, buf, strlen(buf));
+      SSL_write(ssl_client, buf, strlen(buf));
     }else{
       dprintf(sockfd, "%s", pos2);//may need newline
     }
@@ -129,7 +129,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     *period = atoi(pos+7);//starts reading right after the =
     if(tls_ver){
       sprintf(buf, "PERIOD=%i\n", *period);
-      ssl_write(ssl_client, buf, strlen(buf));
+      SSL_write(ssl_client, buf, strlen(buf));
     }else{
       dprintf(sockfd, "PERIOD=%i\n", *period);
     }
@@ -138,7 +138,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     }
   }else if(strstr(buf, "SCALE=F")){
     if(tls_ver){
-      ssl_write(ssl_client, "SCALE=F\n", strlen("SCALE=F\n"));
+      SSL_write(ssl_client, "SCALE=F\n", strlen("SCALE=F\n"));
     }else{
       dprintf(sockfd, "SCALE=F\n");
     }
@@ -148,7 +148,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     *scale = 'F';
   }else if(strstr(buf, "SCALE=C")){
     if(tls_ver){
-      ssl_write(ssl_client, "SCALE=C\n", strlen("SCALE=C\n"));
+      SSL_write(ssl_client, "SCALE=C\n", strlen("SCALE=C\n"));
     }else{
       dprintf(sockfd, "SCALE=C\n");
     }
@@ -158,7 +158,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     *scale = 'C';
   }else if(strstr(buf, "STOP")){
     if(tls_ver){
-      ssl_write(ssl_client, "STOP\n", strlen("STOP\n"));
+      SSL_write(ssl_client, "STOP\n", strlen("STOP\n"));
     }else{
       dprintf(sockfd, "STOP\n");
     }
@@ -168,7 +168,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     *log_status = 0;
   }else if(strstr(buf, "START")){
     if(tls_ver){
-      ssl_write(ssl_client, "START\n", strlen("START\n"));
+      SSL_write(ssl_client, "START\n", strlen("START\n"));
     }else{
       dprintf(sockfd, "START\n");
     }
@@ -178,9 +178,9 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     *log_status = 1;
   }else if(strstr(buf, "OFF")){
     if(tls_ver){
-      ssl_write(ssl_client, "OFF\n", strlen("OFF\n"));
+      SSL_write(ssl_client, "OFF\n", strlen("OFF\n"));
       ssl_print_current_time();
-      ssl_write(ssl_client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
+      SSL_write(ssl_client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
     }else{
       dprintf(sockfd, "OFF\n");
       print_current_time(sockfd);
@@ -194,7 +194,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     handle_exit();
   }else{
     if(tls_ver){
-      ssl_write(ssl_client, buf, strlen(buf));
+      SSL_write(ssl_client, buf, strlen(buf));
     }else{
       dprintf(sockfd, "%s\n", buf);
     }
@@ -245,7 +245,7 @@ void button_press(){
   //run_flag = 0;
   if(tls_ver){
     ssl_print_current_time();
-    ssl_write(ssl_Client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
+    SSL_write(ssl_client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
   }else{
     print_current_time(sockfd);
     dprintf(sockfd, "SHUTDOWN\n");
@@ -263,7 +263,6 @@ void button_press(){
 
 int main(int argc, char **argv){
   //command line variables
-  char* exec_name = argv[0];//exec name
   int period = 1;//in seconds
   char scale = 'F';
   char* log_name = NULL;
@@ -350,7 +349,7 @@ int main(int argc, char **argv){
   }
   if(tls_ver){
     sprintf(ssl_buf, "ID=%s\n", id_string);
-    ssl_write(ssl_client, ssl_buf, strlen(ssl_buf));
+    SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
   }else{
     dprintf(sockfd, "ID=%s\n", id_string);
   }
@@ -376,7 +375,7 @@ int main(int argc, char **argv){
   if(tls_ver){
     ssl_print_current_time();
     sprintf(ssl_buf, "%3.1f\n", temp_value);
-    ssl_write(ssl_client, ssl_buf, strlen(ssl_buf));
+    SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
   }else{
     print_current_time(sockfd);
     dprintf(sockfd, "%3.1f\n", temp_value);
@@ -398,7 +397,7 @@ int main(int argc, char **argv){
       if(tls_ver){
         ssl_print_current_time();
         sprintf(ssl_buf, "%3.1f\n", temp_value);
-        ssl_write(ssl_client, ssl_buf, strlen(ssl_buf));
+        SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
       }else{
         print_current_time(sockfd);
         dprintf(sockfd, "%3.1f\n", temp_value);
@@ -410,7 +409,7 @@ int main(int argc, char **argv){
     }
     if(poll(&poll_in, 1, 0) > 0){
       if(tls_ver){
-        int len = ssl_read(ssl_client, buf, 256);
+        int len = SSL_read(ssl_client, buf, 256);
         buf[len] = '\0';
       }else{
         int len = read(sockfd, buf, 256);
