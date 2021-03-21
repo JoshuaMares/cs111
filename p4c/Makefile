@@ -1,5 +1,5 @@
 default:
-	gcc -lm -lmraa -o lab4c -g -Wall -Wextra lab4c.c
+	gcc -lm -lmraa -lssl -lcrypto -o lab4c -g -Wall -Wextra lab4c.c
 	ln -f lab4c lab4c_tcp
 	ln -f lab4c lab4c_tls
 	chmod +x lab4c_tcp
