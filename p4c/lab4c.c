@@ -30,6 +30,7 @@ int tls_ver = 0;
 SSL_CTX* context = NULL;
 SSL* ssl_client = NULL;
 char ssl_buf[256];
+char time_buf[256];
 
 int client_connect(char* host_name, unsigned int port){
   struct sockaddr_in serv_addr;
@@ -73,22 +74,12 @@ void handle_exit(){
   exit(0);
 }
 
-void print_current_time(int fd){
+void print_current_time(){
   struct timespec ts;
   struct tm *tm;
   clock_gettime(CLOCK_REALTIME, &ts);
   tm = localtime(&(ts.tv_sec));
-  dprintf(fd, "%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
-}
-
-void ssl_print_current_time(){
-  struct timespec ts;
-  struct tm *tm;
-  clock_gettime(CLOCK_REALTIME, &ts);
-  tm = localtime(&(ts.tv_sec));
-  char time_buf[256];
-  sprintf(time_buf, "%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
-  SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
+  sprintf(time_buf, "%02d:%02d:%02d", tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 float convert_to_scale(char scale, int value){
@@ -113,6 +104,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     LOG line of text
     OFF
   */
+  print_current_time();
   char* pos = strstr(buf, "PERIOD=");
   char* pos2 = strstr(buf, "LOG ");
   if(pos2){
@@ -179,17 +171,15 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
   }else if(strstr(buf, "OFF")){
     if(tls_ver){
       //SSL_write(ssl_client, "OFF\n", strlen("OFF\n"));
-      ssl_print_current_time();
-      SSL_write(ssl_client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
+      sprintf(buf, "%s SHUTDOWN\n", time_buf);
+      SSL_write(ssl_client, buf, strlen(buf));
     }else{
       //dprintf(sockfd, "OFF\n");
-      print_current_time(sockfd);
-      dprintf(sockfd, "SHUTDOWN\n");
+      dprintf(sockfd, "%s SHUTDOWN\n", time_buf);
     }
     if(ofd){
       dprintf(ofd, "OFF\n");
-      print_current_time(ofd);
-      dprintf(ofd, "SHUTDOWN\n");
+      dprintf(ofd, "%s SHUTDOWN\n", time_buf);
     }
     handle_exit();
   }else{
@@ -245,17 +235,18 @@ void do_when_interrupted(){
 
 void button_press(){
   //run_flag = 0;
+  char buf[256];
+  print_current_time();
   if(tls_ver){
-    ssl_print_current_time();
-    SSL_write(ssl_client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
+    sprintf(buf, "%s SHUTDOWN\n", time_buf);
+    SSL_write(ssl_client, buf, strlen(buf));
   }else{
-    print_current_time(sockfd);
-    dprintf(sockfd, "SHUTDOWN\n");
+    dprintf(sockfd, "%s SHUTDOWN\n", time_buf);
   }
 
   if(ofd){
-    print_current_time(ofd);
-    dprintf(ofd, "SHUTDOWN\n");
+    print_current_time();
+    dprintf(ofd, "%s SHUTDOWN\n", time_buf);
   }
   ssl_clean_client();
   mraa_gpio_close(button);
@@ -376,17 +367,15 @@ int main(int argc, char **argv){
   //first reading before any input can be proccessed
   value = mraa_aio_read(temp_sensor);
   float temp_value = convert_to_scale(scale, value);
+  print_current_time();
   if(tls_ver){
-    ssl_print_current_time();
-    sprintf(ssl_buf, "%3.1f\n", temp_value);
+    sprintf(ssl_buf, "%s %3.1f\n", time_buf, temp_value);
     SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
   }else{
-    print_current_time(sockfd);
-    dprintf(sockfd, "%3.1f\n", temp_value);
+    dprintf(sockfd, "%s %3.1f\n", time_buf, temp_value);
   }
   if(ofd){
-    print_current_time(ofd);
-    dprintf(ofd, "%3.1f\n", temp_value);
+    dprintf(ofd, "%s %3.1f\n", time_buf temp_value);
   }
 
   //logic loop
@@ -398,17 +387,15 @@ int main(int argc, char **argv){
     int diff = curr_time.tv_sec - prev_time.tv_sec;
     if(diff >= period && log_status){
       prev_time = curr_time;
+      print_current_time();
       if(tls_ver){
-        ssl_print_current_time();
-        sprintf(ssl_buf, "%3.1f\n", temp_value);
+        sprintf(ssl_buf, "%s %3.1f\n", time_buf, temp_value);
         SSL_write(ssl_client, ssl_buf, strlen(ssl_buf));
       }else{
-        print_current_time(sockfd);
-        dprintf(sockfd, "%3.1f\n", temp_value);
+        dprintf(sockfd, "%s %3.1f\n", time_buf, temp_value);
       }
       if(ofd){
-        print_current_time(ofd);
-        dprintf(ofd, "%3.1f\n", temp_value);
+        dprintf(ofd, "%s %3.1f\n", time_buf, temp_value);
       }
     }
     if(poll(&poll_in, 1, 0) > 0){
