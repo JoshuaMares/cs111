@@ -375,7 +375,7 @@ int main(int argc, char **argv){
     dprintf(sockfd, "%s %3.1f\n", time_buf, temp_value);
   }
   if(ofd){
-    dprintf(ofd, "%s %3.1f\n", time_buf temp_value);
+    dprintf(ofd, "%s %3.1f\n", time_buf, temp_value);
   }
 
   //logic loop
