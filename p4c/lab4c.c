@@ -116,73 +116,73 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
   char* pos = strstr(buf, "PERIOD=");
   char* pos2 = strstr(buf, "LOG ");
   if(pos2){
-    if(tls_ver){
+    /*if(tls_ver){
       sprintf(buf, "%s", pos2);
       SSL_write(ssl_client, buf, strlen(buf));
     }else{
       dprintf(sockfd, "%s", pos2);//may need newline
-    }
+    }*/
     if(ofd){
       dprintf(ofd, "%s", pos2);//may need newline
     }
   }else if(pos){//a return val of null means no string found
     *period = atoi(pos+7);//starts reading right after the =
-    if(tls_ver){
+    /*if(tls_ver){
       sprintf(buf, "PERIOD=%i\n", *period);
       SSL_write(ssl_client, buf, strlen(buf));
     }else{
       dprintf(sockfd, "PERIOD=%i\n", *period);
-    }
+    }*/
     if(ofd){
       dprintf(ofd, "PERIOD=%i\n", *period);
     }
   }else if(strstr(buf, "SCALE=F")){
-    if(tls_ver){
+    /*if(tls_ver){
       SSL_write(ssl_client, "SCALE=F\n", strlen("SCALE=F\n"));
     }else{
       dprintf(sockfd, "SCALE=F\n");
-    }
+    }*/
     if(ofd){
       dprintf(ofd, "SCALE=F\n");
     }
     *scale = 'F';
   }else if(strstr(buf, "SCALE=C")){
-    if(tls_ver){
+    /*if(tls_ver){
       SSL_write(ssl_client, "SCALE=C\n", strlen("SCALE=C\n"));
     }else{
       dprintf(sockfd, "SCALE=C\n");
-    }
+    }*/
     if(ofd){
       dprintf(ofd, "SCALE=C\n");
     }
     *scale = 'C';
   }else if(strstr(buf, "STOP")){
-    if(tls_ver){
+    /*if(tls_ver){
       SSL_write(ssl_client, "STOP\n", strlen("STOP\n"));
     }else{
       dprintf(sockfd, "STOP\n");
-    }
+    }*/
     if(ofd){
       dprintf(ofd, "STOP\n");
     }
     *log_status = 0;
   }else if(strstr(buf, "START")){
-    if(tls_ver){
+    /*if(tls_ver){
       SSL_write(ssl_client, "START\n", strlen("START\n"));
     }else{
       dprintf(sockfd, "START\n");
-    }
+    }*/
     if(ofd){
       dprintf(ofd, "START\n");
     }
     *log_status = 1;
   }else if(strstr(buf, "OFF")){
     if(tls_ver){
-      SSL_write(ssl_client, "OFF\n", strlen("OFF\n"));
+      //SSL_write(ssl_client, "OFF\n", strlen("OFF\n"));
       ssl_print_current_time();
       SSL_write(ssl_client, "SHUTDOWN\n", strlen("SHUTDOWN\n"));
     }else{
-      dprintf(sockfd, "OFF\n");
+      //dprintf(sockfd, "OFF\n");
       print_current_time(sockfd);
       dprintf(sockfd, "SHUTDOWN\n");
     }
