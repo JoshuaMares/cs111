@@ -193,6 +193,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     }
     handle_exit();
   }else{
+    /*
     if(tls_ver){
       SSL_write(ssl_client, buf, strlen(buf));
     }else{
@@ -201,6 +202,7 @@ void handle_command(char* buf, char* scale, int* log_status, int* period){
     if(ofd){
       dprintf(ofd, "%s\n", buf);
     }
+    */
   }
   return;
 }
