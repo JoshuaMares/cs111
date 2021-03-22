@@ -68,7 +68,9 @@ void ssl_clean_client(){
 void handle_exit(){
   //close the buttons, polls, and exit with proper status
   //good bad exit?
-  ssl_clean_client();
+  if(tls_ver){
+    ssl_clean_client();
+  }
   mraa_gpio_close(button);
   mraa_aio_close(temp_sensor);
   exit(0);
